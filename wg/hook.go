@@ -51,6 +51,9 @@ func BindHook(se *core.ServeEvent) error {
 		if err := dev.IpcSet(rmConf); err != nil {
 			return apis.NewInternalServerError("WireGuard rm peer failed", err)
 		}
+		if p.GetBool("disabled") { // 如果已经被禁用, 就不再添加
+			return nil
+		}
 		if err := dev.IpcSet(ipcConf); err != nil {
 			return apis.NewInternalServerError("WireGuard set ipc config failed", err)
 		}
