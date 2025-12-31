@@ -44,6 +44,7 @@ func BindHook(se *core.ServeEvent) error {
 		pubkey := Base64ToHex(p.GetString("pubkey"))
 		devLocker.Lock()
 		defer devLocker.Unlock()
+		dev := wgBind.GetDevice()
 		if dev == nil {
 			return nil
 		}
@@ -62,6 +63,7 @@ func BindHook(se *core.ServeEvent) error {
 	se.App.OnRecordDeleteRequest(db.TablePeers).BindFunc(func(e *core.RecordRequestEvent) error {
 		devLocker.Lock()
 		defer devLocker.Unlock()
+		dev := wgBind.GetDevice()
 		if dev == nil {
 			return e.Next()
 		}

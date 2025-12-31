@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"sync/atomic"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/shynome/err0"
@@ -20,12 +21,16 @@ import (
 
 type Config struct {
 	core.App
+	base atomic.Pointer[configBase]
+}
+
+var _ bind.Config = (*Config)(nil)
+
+type configBase struct {
 	key  device.NoisePrivateKey
 	dst  [2]netip.Addr // [0]v6 [1]v4
 	port uint16
 }
-
-var _ bind.Config = (*Config)(nil)
 
 func (app *Config) GetPeer(initiator []byte, endpoint string) (peer bind.Peer) {
 	var err error
@@ -35,6 +40,7 @@ func (app *Config) GetPeer(initiator []byte, endpoint string) (peer bind.Peer) {
 		peer = nil
 	})
 	var p *Peer = NewPeer(app)
+	base := app.base.Load()
 	switch {
 	case endpoint != "":
 		eps := []string{}
@@ -46,7 +52,7 @@ func (app *Config) GetPeer(initiator []byte, endpoint string) (peer bind.Peer) {
 		p.SetProxyRecord(record)
 		p.outbound = true
 	case len(initiator) != 0:
-		pubkey := try.To1(pubkey.Unpack(app.key, initiator))
+		pubkey := try.To1(pubkey.Unpack(base.key, initiator))
 		pubkeyStr := wgtypes.Key(pubkey).String()
 		record, err := app.FindFirstRecordByData(db.TablePeers, "pubkey", pubkeyStr)
 		if err != nil {
@@ -67,7 +73,7 @@ func (app *Config) GetPeer(initiator []byte, endpoint string) (peer bind.Peer) {
 	}
 
 	n := nat.New()
-	dst6, dst4 := app.dst[0], app.dst[1]
+	dst6, dst4 := base.dst[0], base.dst[1]
 	ip6 := p.GetString("ipv6")
 	ip4 := p.GetString("ipv4")
 	if ip4 != "" {

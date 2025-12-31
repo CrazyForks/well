@@ -16,10 +16,12 @@ import (
 func (app *Config) IpcConfig() (_ string, err error) {
 	defer err0.Then(&err, nil, nil)
 
+	base := app.base.Load()
+
 	var b = new(bytes.Buffer)
 
-	fmt.Fprintf(b, "private_key=%s\n", hex.EncodeToString(app.key[:]))
-	fmt.Fprintf(b, "listen_port=%d\n", app.port)
+	fmt.Fprintf(b, "private_key=%s\n", hex.EncodeToString(base.key[:]))
+	fmt.Fprintf(b, "listen_port=%d\n", base.port)
 
 	q := dbx.HashExp{"disabled": false}
 	peers := try.To1(app.FindAllRecords(db.TablePeers, q))

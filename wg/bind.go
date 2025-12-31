@@ -20,8 +20,9 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-var dev *device.Device
 var devLocker sync.Mutex
+var wgBind *bind.Bind
+var wgConfig *Config
 
 func getRoutes() []string {
 	return []string{
@@ -39,6 +40,18 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		viper.Set("wg_key", keyStr)
 		try.To(viper.SafeWriteConfig())
 	}
+
+	wgConfig = &Config{App: se.App}
+	wgBind = bind.New(wgConfig)
+	wgBind.SetLogger(se.App.Logger())
+
+	se.Router.Any("/api/whip", func(e *core.RequestEvent) error {
+		if wgBind.GetDevice() == nil {
+			return apis.NewApiError(http.StatusServiceUnavailable, "WireGuard 尚未启动", nil)
+		}
+		wgBind.ServeHTTP(e.Response, e.Request)
+		return nil
+	})
 
 	ipc := se.Router.Group("/api/ipc")
 	ipc.BindFunc(func(e *core.RequestEvent) error {
@@ -77,14 +90,16 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		return e.JSON(http.StatusCreated, apis.NewApiError(http.StatusCreated, "启动成功", nil))
 	})
 	ipc.DELETE("/device", func(e *core.RequestEvent) error {
+		dev := wgBind.GetDevice()
 		if dev == nil {
 			return apis.NewApiError(http.StatusServiceUnavailable, "device 尚未启动", nil)
 		}
 		dev.Close()
-		dev = nil
+		wgBind.Device.Store(nil)
 		return e.NoContent(http.StatusNoContent)
 	})
 	ipc.GET("/device", func(e *core.RequestEvent) error {
+		dev := wgBind.GetDevice()
 		if dev == nil {
 			return apis.NewApiError(http.StatusServiceUnavailable, "device 尚未启动", nil)
 		}
@@ -109,11 +124,12 @@ func BindIPC(se *core.ServeEvent) (err error) {
 }
 
 func startWireGuard(app core.App, params DeviceParams) (err error) {
+	dev := wgBind.GetDevice()
 	if dev != nil {
 		return apis.NewApiError(http.StatusOK, "device 已启动", nil)
 	}
 	defer err0.Then(&err, nil, func() {
-		dev = nil // 出错了的话将 device 重置为 nil
+		wgBind.Device.Store(nil) // 出错了的话将 device 重置为 nil
 	})
 
 	viper.ReadInConfig() // 重新加载配置文件
@@ -123,14 +139,13 @@ func startWireGuard(app core.App, params DeviceParams) (err error) {
 	_, portStr := try.To2(net.SplitHostPort(viper.GetString("listen")))
 	port := try.To1(strconv.Atoi(portStr))
 
-	c := &Config{
-		App:  app,
+	base := configBase{
 		key:  key,
 		port: uint16(port),
 	}
 	for i, r := range routes {
 		pf := try.To1(netip.ParsePrefix(r))
-		c.dst[i] = pf.Addr()
+		base.dst[i] = pf.Addr()
 	}
 
 	var cRouteUp = func(tun tun.Device, routes []string) (err error) {
@@ -153,12 +168,12 @@ func startWireGuard(app core.App, params DeviceParams) (err error) {
 		tdev.Close() // 如果出错了, 释放资源
 	})
 
-	b := bind.New(c)
+	wgConfig.base.Store(&base)
 	logger := logger.New("net.remoon.well ")
-	dev = device.NewDevice(tdev, b, logger)
-	ipcConf := try.To1(c.IpcConfig())
+	dev = device.NewDevice(tdev, wgBind, logger)
+	ipcConf := try.To1(wgConfig.IpcConfig())
 	try.To(dev.IpcSet(ipcConf))
-	b.Device.Store(dev)
+	wgBind.Device.Store(dev)
 	try.To(dev.Up())
 	defer err0.Then(&err, nil, func() {
 		dev.Close() // 如果出错了, 释放资源
