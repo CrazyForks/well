@@ -109,6 +109,7 @@ func (lk *Linker) Start(ctx context.Context) {
 		socket, _, err := websocket.Dial(ctx, link, opts)
 		conn := websocket.NetConn(ctx, socket, websocket.MessageBinary)
 		sess := try.To1(yamux.Server(conn, nil))
+		defer sess.Close()
 
 		try.To1(sess.Ping())
 
