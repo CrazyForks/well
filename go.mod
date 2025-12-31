@@ -5,11 +5,15 @@ go 1.25.5
 replace golang.zx2c4.com/wireguard => github.com/remoon-net/wireguard-go v0.0.0-20250703151635-97f4294f663c
 
 require (
+	github.com/avast/retry-go/v4 v4.7.0
+	github.com/hashicorp/yamux v0.1.2
 	github.com/pion/webrtc/v4 v4.0.15
 	github.com/pocketbase/dbx v1.11.0
 	github.com/pocketbase/pocketbase v0.35.0
 	github.com/shynome/err0 v0.2.1
+	github.com/shynome/websocket v1.9.1
 	github.com/shynome/wgortc v0.8.3
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
@@ -54,11 +58,9 @@ require (
 	github.com/pion/turn/v4 v4.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
-	github.com/shynome/websocket v1.9.1 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect

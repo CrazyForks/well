@@ -1,0 +1,131 @@
+package wg
+
+import (
+	"context"
+	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/avast/retry-go/v4"
+	"github.com/hashicorp/yamux"
+	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/store"
+	"github.com/shynome/err0"
+	"github.com/shynome/err0/try"
+	"github.com/shynome/websocket"
+	"remoon.net/well/db"
+)
+
+var lks = store.New(map[string]*Linker{})
+
+func BindLinkers(se *core.ServeEvent) error {
+
+	q := dbx.HashExp{"disabled": false}
+	linkers, err := se.App.FindAllRecords(db.TableLinkers, q)
+	if err != nil {
+		return err
+	}
+	for _, r := range linkers {
+		lks.GetOrSet(r.Id, linkerInit(r))
+	}
+
+	preUpdateRequest(se.App, db.TableLinkers, func(e *core.RecordRequestEvent) error {
+		if err := e.Next(); err != nil {
+			return err
+		}
+		r := e.Record
+		if lk, ok := lks.GetOk(r.Id); ok {
+			lks.Remove(r.Id) // 先关闭一次
+			lk.Stop()
+		}
+		if r.GetBool("disabled") {
+			return nil // 如果被禁用后则不再启用
+		}
+		lks.GetOrSet(r.Id, linkerInit(r))
+		return nil
+	})
+	se.App.OnRecordUpdateRequest(db.TableLinkers).BindFunc(func(e *core.RecordRequestEvent) error {
+		r := e.Record
+		if lk, ok := lks.GetOk(r.Id); ok {
+			lks.Remove(r.Id)
+			lk.Stop()
+		}
+		return e.Next()
+	})
+	return se.Next()
+}
+
+func linkerInit(r *core.Record) func() *Linker {
+	return func() *Linker {
+		ctx := context.Background()
+		ctx, stop := context.WithCancel(ctx)
+		linker := &Linker{Stop: stop}
+		linker.SetProxyRecord(r)
+		go linker.Start(ctx)
+		return linker
+	}
+}
+
+type Linker struct {
+	core.BaseRecordProxy
+	app  core.App
+	Stop context.CancelFunc
+}
+
+func (lk *Linker) Start(ctx context.Context) {
+	logger := lk.app.Logger().With(
+		"linker", lk.Id,
+		"whip", lk.GetString("whip"),
+	)
+	retry.Do(func() (err error) {
+		defer err0.Then(&err, nil, func() {
+			logger.Error("wshttp 连接出错", "error", err)
+		})
+
+		lk.updateStatus("connecting")
+
+		link := lk.GetString("whip")
+		u := try.To1(url.Parse(link))
+
+		opts := &websocket.DialOptions{
+			Subprotocols: []string{"wshttp"},
+		}
+		if uinfo := u.User; uinfo != nil {
+			u.User = nil // 移除 User
+			p := opts.Subprotocols
+			if uname := uinfo.Username(); uname != "" {
+				p = append(p, uname)
+				if pass, _ := uinfo.Password(); pass != "" {
+					p = append(p, pass)
+				}
+			}
+			opts.Subprotocols = p
+		}
+
+		u.Fragment = "" //要去除 Fragment
+		link = u.String()
+
+		socket, _, err := websocket.Dial(ctx, link, opts)
+		conn := websocket.NetConn(ctx, socket, websocket.MessageBinary)
+		sess := try.To1(yamux.Server(conn, nil))
+
+		try.To1(sess.Ping())
+
+		lk.updateStatus("connected")
+		return http.Serve(sess, wgBind)
+	},
+		retry.Context(ctx),
+		retry.Attempts(0),
+		retry.MaxDelay(15*time.Second),
+	)
+}
+
+func (lk *Linker) updateStatus(s string) {
+	q := dbx.HashExp{"id": lk.Id}
+	p := dbx.Params{"status": s}
+	logger := lk.app.Logger().With("linker", lk.Id)
+	if _, err := lk.app.DB().Update(db.TableLinkers, p, q).Execute(); err != nil {
+		logger.Error("update status failed", "error", err)
+	}
+}

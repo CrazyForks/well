@@ -1,8 +1,9 @@
 package db
 
 const (
-	TablePeers = "peers"
-	TableICEs  = "ices"
+	TablePeers   = "peers"
+	TableICEs    = "ices"
+	TableLinkers = "linkers"
 )
 
 const (
