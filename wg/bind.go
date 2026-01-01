@@ -77,7 +77,15 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		return e.Next()
 	})
 
-	ipc.GET("/device/routes", func(e *core.RequestEvent) error {
+	ipc.GET("/device/android/start", func(e *core.RequestEvent) error {
+		if mvpn == nil {
+			return apis.NewApiError(http.StatusServiceUnavailable, "mvpn 尚未设置", nil)
+		}
+		token := e.Request.Header.Get("authorization")
+		mvpn.Start(token)
+		return e.NoContent(http.StatusNoContent)
+	})
+	se.Router.GET("/api/ipc/device/routes", func(e *core.RequestEvent) error {
 		// 给安卓端用的, 安卓端路由必须在 builder.establish() 之前设定好之后才有 tun, 需要分两步
 		return e.JSON(http.StatusOK, getRoutes())
 	})
