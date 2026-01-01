@@ -32,6 +32,12 @@ func BindLinkers(se *core.ServeEvent) error {
 	for _, r := range linkers {
 		lks.GetOrSet(r.Id, linkerInit(se.App, r))
 	}
+	se.App.OnTerminate().BindFunc(func(e *core.TerminateEvent) error {
+		for _, lk := range lks.Values() {
+			lk.Stop()
+		}
+		return e.Next()
+	})
 
 	preUpdateRequest(se.App, db.TableLinkers, func(e *core.RecordRequestEvent) error {
 		if err := e.Next(); err != nil {
