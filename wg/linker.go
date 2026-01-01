@@ -123,6 +123,7 @@ func (lk *Linker) Start(ctx context.Context) {
 		retry.Attempts(0),
 		retry.MaxDelay(15*time.Second),
 	)
+	lk.updateStatus("stopped")
 }
 
 func (lk *Linker) updateStatus(s string) {
