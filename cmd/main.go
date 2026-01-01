@@ -14,8 +14,10 @@ import (
 
 var Version = "dev"
 
-func Main() {
-	app := pocketbase.New()
+func Main(datadir string) {
+	app := pocketbase.NewWithConfig(pocketbase.Config{
+		DefaultDataDir: datadir,
+	})
 	app.RootCmd.Version = Version
 
 	ddir := app.DataDir()
