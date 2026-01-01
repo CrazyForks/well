@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"encoding/json"
+	"os"
 	"strings"
 
 	"github.com/pocketbase/pocketbase"
@@ -14,10 +16,13 @@ import (
 
 var Version = "dev"
 
-func Main(datadir string) {
-	app := pocketbase.NewWithConfig(pocketbase.Config{
-		DefaultDataDir: datadir,
-	})
+func Main(argsStr string) string {
+	var args []string
+	if argsStr != "" {
+		try.To(json.Unmarshal([]byte(argsStr), &args))
+		os.Args = append(os.Args, args...)
+	}
+	app := pocketbase.New()
 	app.RootCmd.Version = Version
 
 	ddir := app.DataDir()
@@ -44,7 +49,24 @@ func Main(datadir string) {
 	app.OnServe().BindFunc(wg.BindHook)
 	app.OnServe().BindFunc(wg.BindIPC)
 	app.OnServe().BindFunc(wg.BindLinkers)
-	try.To(app.Start())
+
+	if argsStr == "" {
+		try.To(app.Start())
+		return wg.ListenAddr
+	}
+	ch := make(chan error)
+	app.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		if err := e.Next(); err != nil {
+			ch <- err
+			return err
+		}
+		ch <- nil
+		return nil
+	})
+	go app.Start()
+	err := <-ch
+	try.To(err)
+	return wg.ListenAddr
 }
 
 func getServeCmd(app *pocketbase.PocketBase) *cobra.Command {
