@@ -54,10 +54,7 @@ func BindIPC(se *core.ServeEvent) (err error) {
 	})
 
 	se.Router.Any("/api/whip", func(e *core.RequestEvent) error {
-		if wgBind.GetDevice() == nil {
-			return apis.NewApiError(http.StatusServiceUnavailable, "WireGuard 尚未启动", nil)
-		}
-		wgBind.ServeHTTP(e.Response, e.Request)
+		wgHandler.ServeHTTP(e.Response, e.Request)
 		return nil
 	})
 
