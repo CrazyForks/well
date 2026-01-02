@@ -86,7 +86,7 @@ func preUpdatePeer(e *core.RecordRequestEvent) (err error) {
 
 	r := e.Record
 
-	routes := getRoutes()
+	routes := GetRoutes()
 	var (
 		pf6 = try.To1(netip.ParsePrefix(routes[0]))
 		pf4 = try.To1(netip.ParsePrefix(routes[1]))

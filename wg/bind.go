@@ -25,7 +25,7 @@ var wgBind *bind.Bind
 var wgConfig *Config
 var wgHandler http.Handler
 
-func getRoutes() []string {
+func GetRoutes() []string {
 	return []string{
 		"fdd9:f800::1/24",
 		viper.GetString("ip4_route"),
@@ -81,13 +81,8 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		if mvpn == nil {
 			return apis.NewApiError(http.StatusServiceUnavailable, "mvpn 尚未设置", nil)
 		}
-		token := e.Request.Header.Get("authorization")
-		mvpn.Start(token)
+		mvpn.Start()
 		return e.NoContent(http.StatusNoContent)
-	})
-	se.Router.GET("/api/ipc/device/routes", func(e *core.RequestEvent) error {
-		// 给安卓端用的, 安卓端路由必须在 builder.establish() 之前设定好之后才有 tun, 需要分两步
-		return e.JSON(http.StatusOK, getRoutes())
 	})
 
 	ipc.POST("/device", func(e *core.RequestEvent) (err error) {
@@ -96,7 +91,7 @@ func BindIPC(se *core.ServeEvent) (err error) {
 			return err
 		}
 
-		if err := startWireGuard(e.App, params); err != nil {
+		if err := startWireGuard(params); err != nil {
 			return err
 		}
 
@@ -135,7 +130,7 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		}
 		devLocker.Lock()
 		defer devLocker.Unlock()
-		err := startWireGuard(se.App, DeviceParams{})
+		err := startWireGuard(DeviceParams{})
 		try.To(err)
 	}()
 
@@ -144,7 +139,22 @@ func BindIPC(se *core.ServeEvent) (err error) {
 
 var ListenAddr string
 
-func startWireGuard(app core.App, params DeviceParams) (err error) {
+func StartWireGuard(params DeviceParams) (err error) {
+	devLocker.Lock()
+	defer devLocker.Unlock()
+	return startWireGuard(params)
+}
+
+func StopWireGuard() {
+	devLocker.Lock()
+	defer devLocker.Unlock()
+	if dev := wgBind.Device.Swap(nil); dev != nil {
+		dev.Close()
+	}
+}
+
+func startWireGuard(params DeviceParams) (err error) {
+	var app core.App = wgConfig.App
 	dev := wgBind.GetDevice()
 	if dev != nil {
 		return apis.NewApiError(http.StatusOK, "device 已启动", nil)
@@ -156,7 +166,7 @@ func startWireGuard(app core.App, params DeviceParams) (err error) {
 	viper.ReadInConfig() // 重新加载配置文件
 	keyStr := viper.GetString("wg_key")
 	key := device.NoisePrivateKey(decodeBase64(keyStr))
-	routes := getRoutes()
+	routes := GetRoutes()
 	_, portStr := try.To2(net.SplitHostPort(ListenAddr))
 	port := try.To1(strconv.Atoi(portStr))
 
