@@ -63,7 +63,7 @@ func (p *Peer) IpcConfig() (_ string, err error) {
 	}
 
 	eps := []string{}
-	for _, ep := range []string{p.GetString("endpoint"), p.GetString("endpoint2")} {
+	for _, ep := range []string{p.GetString("whip"), p.GetString("whip2")} {
 		if ep == "" {
 			continue
 		}

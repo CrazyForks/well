@@ -48,7 +48,7 @@ func (app *Config) GetPeer(initiator []byte, endpoint string) (peer bind.Peer) {
 		if len(eps) < 1 {
 			err0.Throw(fmt.Errorf("不应当出现无法获取 endpoints 的情况. endpoint: %s", endpoint))
 		}
-		record := try.To1(app.FindFirstRecordByData(db.TablePeers, "endpoint", eps[0]))
+		record := try.To1(app.FindFirstRecordByData(db.TablePeers, "whip", eps[0]))
 		p.SetProxyRecord(record)
 		p.outbound = true
 	case len(initiator) != 0:

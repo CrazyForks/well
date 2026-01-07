@@ -91,11 +91,11 @@ func init() {
 				Required: false,
 			},
 			&core.URLField{
-				Name: "endpoint", Id: ID("endpoint"), System: true,
+				Name: "whip", Id: ID("whip"), System: true,
 				Required: false,
 			},
 			&core.URLField{
-				Name: "endpoint2", Id: ID("endpoint2"), System: true,
+				Name: "whip2", Id: ID("whip2"), System: true,
 				Required: false,
 			},
 			&core.NumberField{
