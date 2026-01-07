@@ -137,22 +137,6 @@ func BindIPC(se *core.ServeEvent) (err error) {
 	return se.Next()
 }
 
-var ListenAddr string
-
-func StartWireGuard(params DeviceParams) (err error) {
-	devLocker.Lock()
-	defer devLocker.Unlock()
-	return startWireGuard(params)
-}
-
-func StopWireGuard() {
-	devLocker.Lock()
-	defer devLocker.Unlock()
-	if dev := wgBind.Device.Swap(nil); dev != nil {
-		dev.Close()
-	}
-}
-
 func startWireGuard(params DeviceParams) (err error) {
 	var app core.App = wgConfig.App
 	dev := wgBind.GetDevice()
