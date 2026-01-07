@@ -43,6 +43,9 @@ func BindIPC(se *core.ServeEvent) (err error) {
 	}
 
 	wgConfig = &Config{App: se.App}
+	base := getBaseTry()
+	wgConfig.base.Store(&base)
+
 	wgBind = bind.New(wgConfig)
 	wgBind.SetLogger(se.App.Logger())
 	wgHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -113,15 +116,17 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		return e.Next()
 	})
 	ipc.GET("/device", func(e *core.RequestEvent) error {
-		dev := wgBind.GetDevice()
-		if dev == nil {
-			return apis.NewApiError(http.StatusServiceUnavailable, "device 尚未启动", nil)
+		base := wgConfig.base.Load()
+		if base == nil {
+			return apis.NewApiError(http.StatusServiceUnavailable, "服务尚未初始化成功", nil)
 		}
-		s, err := dev.IpcGet()
-		if err != nil {
-			return apis.NewApiError(http.StatusInternalServerError, err.Error(), err)
+		pubkey := wgtypes.Key(base.key).PublicKey()
+		ds := DeviceStatus{
+			Running: wgBind.GetDevice() != nil,
+			Pubkey:  pubkey.String(),
+			Routes:  GetRoutes(),
 		}
-		return e.String(http.StatusOK, s)
+		return e.JSON(http.StatusOK, ds)
 	})
 
 	func() {
@@ -137,16 +142,13 @@ func BindIPC(se *core.ServeEvent) (err error) {
 	return se.Next()
 }
 
-func startWireGuard(params DeviceParams) (err error) {
-	var app core.App = wgConfig.App
-	dev := wgBind.GetDevice()
-	if dev != nil {
-		return apis.NewApiError(http.StatusOK, "device 已启动", nil)
-	}
-	defer err0.Then(&err, nil, func() {
-		wgBind.Device.Store(nil) // 出错了的话将 device 重置为 nil
-	})
+type DeviceStatus struct {
+	Pubkey  string
+	Routes  []string
+	Running bool
+}
 
+func getBaseTry() configBase {
 	viper.ReadInConfig() // 重新加载配置文件
 	keyStr := viper.GetString("wg_key")
 	key := device.NoisePrivateKey(decodeBase64(keyStr))
@@ -162,6 +164,19 @@ func startWireGuard(params DeviceParams) (err error) {
 		pf := try.To1(netip.ParsePrefix(r))
 		base.dst[i] = pf.Addr()
 	}
+	return base
+}
+
+func startWireGuard(params DeviceParams) (err error) {
+	defer err0.Then(&err, nil, nil)
+	var app core.App = wgConfig.App
+	dev := wgBind.GetDevice()
+	if dev != nil {
+		return apis.NewApiError(http.StatusOK, "device 已启动", nil)
+	}
+	defer err0.Then(&err, nil, func() {
+		wgBind.Device.Store(nil) // 出错了的话将 device 重置为 nil
+	})
 
 	var cRouteUp = func(tun tun.Device, routes []string) (err error) {
 		app.Logger().Error("此平台不支持RouteUp", "os", runtime.GOOS)
@@ -183,6 +198,7 @@ func startWireGuard(params DeviceParams) (err error) {
 		tdev.Close() // 如果出错了, 释放资源
 	})
 
+	base := getBaseTry()
 	wgConfig.base.Store(&base)
 	logger := logger.New("net.remoon.well ")
 	dev = device.NewDevice(tdev, wgBind, logger)
@@ -195,6 +211,7 @@ func startWireGuard(params DeviceParams) (err error) {
 	})
 
 	if !params.Routed {
+		routes := GetRoutes()
 		try.To(cRouteUp(tdev, routes))
 	}
 
