@@ -73,6 +73,9 @@ func BindIPC(se *core.ServeEvent) (err error) {
 				return apis.NewUnauthorizedError("仅允许管理员请求该接口", nil)
 			}
 		}
+		if f, _ := info.Query["devlocker"]; f == "false" {
+			return e.Next()
+		}
 		if locked := devLocker.TryLock(); !locked {
 			return apis.NewApiError(http.StatusLocked, "device 正在被操作中", nil)
 		}
@@ -125,6 +128,7 @@ func BindIPC(se *core.ServeEvent) (err error) {
 			Running: wgBind.GetDevice() != nil,
 			Pubkey:  pubkey.String(),
 			Routes:  GetRoutes(),
+			Android: mvpn != nil,
 		}
 		return e.JSON(http.StatusOK, ds)
 	})
@@ -146,6 +150,7 @@ type DeviceStatus struct {
 	Pubkey  string
 	Routes  []string
 	Running bool
+	Android bool
 }
 
 func getBaseTry() configBase {
