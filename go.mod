@@ -14,7 +14,7 @@ require (
 	github.com/pocketbase/pocketbase v0.35.0
 	github.com/shynome/err0 v0.2.1
 	github.com/shynome/websocket v1.9.1
-	github.com/shynome/wgortc v0.8.3
+	github.com/shynome/wgortc v0.8.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba

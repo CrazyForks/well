@@ -113,6 +113,8 @@ github.com/shynome/websocket v1.9.1 h1:ZVi8CJ8cGlujN6VtCfTOpt1iFSsfyqXOb8PYN4Pm5
 github.com/shynome/websocket v1.9.1/go.mod h1:mVk0rPKqfh3oB7ZvhLGgVg0FSA2SHsPqwpxcVu/sSi8=
 github.com/shynome/wgortc v0.8.3 h1:NHJaHNb1XyoSo1xJ/c7rqMFFgMoxqWJ21S8x4zIsY+M=
 github.com/shynome/wgortc v0.8.3/go.mod h1:4d7L+tCu7eXn4DfGq8ZMFgChSDQhveDhgHa/gfmcsxw=
+github.com/shynome/wgortc v0.8.4 h1:OqBwBfWjtn9c8s6KRQb4KD7VsDpWqPI4EOxDbMMsYFw=
+github.com/shynome/wgortc v0.8.4/go.mod h1:4d7L+tCu7eXn4DfGq8ZMFgChSDQhveDhgHa/gfmcsxw=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 h1:+jumHNA0Wrelhe64i8F6HNlS8pkoyMv5sreGx2Ry5Rw=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8/go.mod h1:3n1Cwaq1E1/1lhQhtRK2ts/ZwZEhjcQeJQ1RuC6Q/8U=
 github.com/spf13/afero v1.15.0 h1:b/YBCLWAJdFWJTN9cLhiXXcD7mzKn9Dm86dNnfyQw1I=
