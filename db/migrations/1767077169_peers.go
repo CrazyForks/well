@@ -105,6 +105,8 @@ func init() {
 			},
 		)
 		addUpdatedFields(peers)
+		peers.AddIndex("peer_pubkey", true, "pubkey", "")
+		peers.AddIndex("peer_whip", true, "whip", `whip != ""`)
 		try.To(app.Save(peers))
 
 		return nil
