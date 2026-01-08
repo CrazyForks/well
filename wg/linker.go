@@ -39,6 +39,7 @@ func InitLinkers(app core.App) error {
 		for _, lk := range lks.Values() {
 			lk.Stop()
 		}
+		lks.RemoveAll()
 		return e.Next()
 	})
 
