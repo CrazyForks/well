@@ -78,6 +78,20 @@ func Main(argsStr string) string {
 	try.To(wg.InitLinkers(app))
 	app.OnServe().Bind(uiHandler)
 
+	firstbootCh := make(chan error)
+	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{
+		Id: "firstboot",
+		Func: func(e *core.ServeEvent) error {
+			if err := e.Next(); err != nil {
+				firstbootCh <- err
+				return err
+			}
+			firstbootCh <- nil
+			return nil
+		},
+	})
+	defer app.OnServe().Unbind("firstboot")
+
 	finished := make(chan int, 2)
 	finished <- 1
 	go func() {
@@ -87,6 +101,10 @@ func Main(argsStr string) string {
 			err := app.Start()
 			if err != nil {
 				logger.Error("程序退出", "error", err)
+			}
+			if wg.ListenAddr == "" {
+				firstbootCh <- nil
+				ExitCh <- 1
 			}
 			finished <- 1
 		}
@@ -99,21 +117,8 @@ func Main(argsStr string) string {
 		ExitCh <- 0
 	}()
 
-	ch := make(chan error)
-	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{
-		Id: "firstboot",
-		Func: func(e *core.ServeEvent) error {
-			if err := e.Next(); err != nil {
-				ch <- err
-				return err
-			}
-			ch <- nil
-			return nil
-		},
-	})
-	defer app.OnServe().Unbind("firstboot")
 	wg.RestartCh <- 1
-	err := <-ch
+	err := <-firstbootCh
 	try.To(err)
 	return wg.ListenAddr
 }
