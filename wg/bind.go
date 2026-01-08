@@ -1,6 +1,7 @@
 package wg
 
 import (
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/netip"
@@ -136,17 +137,72 @@ func BindIPC(se *core.ServeEvent) (err error) {
 		return e.JSON(http.StatusOK, ds)
 	})
 
+	ipc.GET("/settings", func(e *core.RequestEvent) error {
+		var s Settings
+		if err := viper.Unmarshal(&s); err != nil {
+			return err
+		}
+		s2 := SettingsWithRunning{
+			Settings: s,
+		}
+		s2.Running = wgBind.GetDevice() != nil
+		return e.JSON(http.StatusOK, s2)
+	})
+	ipc.POST("/settings", func(e *core.RequestEvent) (err error) {
+		defer err0.Then(&err, nil, nil)
+
+		var s Settings
+		try.To(e.BindBody(&s))
+
+		ms := map[string]any{}
+		b := try.To1(json.Marshal(s))
+		try.To(json.Unmarshal(b, &ms))
+		try.To(viper.MergeConfigMap(ms))
+		try.To(viper.WriteConfig())
+
+		running := wgBind.GetDevice() != nil
+		if running {
+			StopWireGuard()
+			if err := CommonStartWireGuard(); err != nil {
+				return apis.NewInternalServerError(err.Error(), err)
+			}
+		}
+
+		return e.NoContent(http.StatusNoContent)
+	})
+
 	func() {
 		if !viper.GetBool("auto_start") {
 			return
 		}
-		devLocker.Lock()
-		defer devLocker.Unlock()
-		err := startWireGuard(DeviceParams{})
-		try.To(err)
+		if err := CommonStartWireGuard(); err != nil {
+			se.App.Logger().Error("auto_start failed", "error", err)
+		}
 	}()
 
 	return se.Next()
+}
+
+// 支持 Android 端启动, 不用加锁
+func CommonStartWireGuard() error {
+	if mvpn != nil {
+		mvpn.Start()
+		return nil
+	}
+	return StartWireGuard(DeviceParams{})
+}
+
+type Settings struct {
+	Route     string `mapstructure:"ip4_route" json:"ip4_route" form:"ip4_route"`
+	Listen    string `mapstructure:"listen" json:"listen" form:"listen"`
+	Tun       string `mapstructure:"tun" json:"tun" form:"tun"`
+	Key       string `mapstructure:"wg_key" json:"wg_key" form:"wg_key"`
+	AutoStart bool   `mapstructure:"auto_start" json:"auto_start" form:"auto_start"`
+}
+
+type SettingsWithRunning struct {
+	Settings
+	Running bool `json:"running"`
 }
 
 type DeviceStatus struct {
