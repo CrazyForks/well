@@ -161,7 +161,9 @@ func InitIPC(app core.App) (err error) {
 			ms := map[string]any{}
 			b := try.To1(json.Marshal(s))
 			try.To(json.Unmarshal(b, &ms))
-			try.To(viper.MergeConfigMap(ms))
+			for k, v := range ms {
+				viper.Set(k, v)
+			}
 			try.To(viper.WriteConfig())
 
 			if s.Listen != oldListen {
