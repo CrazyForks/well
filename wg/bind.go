@@ -36,13 +36,6 @@ func GetRoutes() []string {
 func InitIPC(app core.App) (err error) {
 	defer err0.Then(&err, nil, nil)
 
-	if keyStr := viper.GetString("wg_key"); keyStr == "" {
-		key := try.To1(wgtypes.GeneratePrivateKey())
-		keyStr = key.String()
-		viper.Set("wg_key", keyStr)
-		try.To(viper.SafeWriteConfig())
-	}
-
 	wgConfig = &Config{App: app}
 	wgBind = bind.New(wgConfig)
 	wgBind.SetLogger(app.Logger())
@@ -56,6 +49,13 @@ func InitIPC(app core.App) (err error) {
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) (err error) {
 		defer err0.Then(&err, nil, nil)
+
+		if keyStr := viper.GetString("wg_key"); keyStr == "" {
+			key := try.To1(wgtypes.GeneratePrivateKey())
+			keyStr = key.String()
+			viper.Set("wg_key", keyStr)
+			try.To(viper.SafeWriteConfig())
+		}
 
 		base := getBaseTry()
 		wgConfig.base.Store(&base)
