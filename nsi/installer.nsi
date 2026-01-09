@@ -64,7 +64,7 @@ DataDirExists:
     ; 卸载信息注册表
     ; -----------------------------
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "DisplayName" "well-net"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "Publisher" "ReMoon"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "Publisher" "ReMoon.net"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "DisplayVersion" "${VERSION}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "UninstallString" "$INSTDIR\Uninstall.exe"
