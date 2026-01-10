@@ -61,6 +61,14 @@ DataDirExists:
     Exec '"$INSTDIR\nssm.exe" start well-net'
 
     ; -----------------------------
+    ; 创建管理面板桌面快捷方式（当前用户）
+    ; -----------------------------
+    SetShellVarContext current
+    WriteIniStr "$DESKTOP\well-net 管理面板.url" "InternetShortcut" "URL" "http://127.0.0.1:7799"
+    WriteIniStr "$DESKTOP\well-net 管理面板.url" "InternetShortcut" "IconFile" "$INSTDIR\well-net.exe"
+    WriteIniStr "$DESKTOP\well-net 管理面板.url" "InternetShortcut" "IconIndex" "0"
+
+    ; -----------------------------
     ; 卸载信息注册表
     ; -----------------------------
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\well-net" "DisplayName" "well-net"
