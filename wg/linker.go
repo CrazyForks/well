@@ -187,6 +187,11 @@ func (lk *Linker) StartSSH(ctx context.Context) {
 		client := try.To1(ssh.Dial("tcp", addr, config))
 		defer client.Close()
 
+		go func() {
+			<-ctx.Done()
+			client.Close()
+		}()
+
 		var (
 			rhost = "127.0.0.1"
 			rport = "80"
