@@ -190,11 +190,11 @@ func (lk *Linker) StartSSH(ctx context.Context) {
 			rhost = "127.0.0.1"
 			rport = "80"
 		)
-		paths := strings.SplitN(u.Path, "/", 3)
-		if len(paths) == 2 {
+		paths := strings.SplitN(u.Path, "/", 4)
+		if len(paths) >= 2 {
 			rport = paths[1]
 		}
-		if len(paths) == 3 {
+		if len(paths) >= 3 {
 			rhost = paths[2]
 		}
 
