@@ -36,6 +36,7 @@ func Main(argsStr string) string {
 	viper.SetConfigName("net.remoon.well")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath(ddir)
+	viper.SetDefault("ip6_addr", "fdd9:f800::1")
 	viper.SetDefault("ip4_route", "192.168.211.1/20")
 	viper.SetDefault("listen", "127.0.0.1:7799")
 	viper.SetDefault("tun", "well-net")

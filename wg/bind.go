@@ -29,7 +29,7 @@ var wgHandler http.Handler
 
 func GetRoutes() []string {
 	return []string{
-		"fdd9:f800::1/24",
+		viper.GetString("ip6_addr") + "/24",
 		viper.GetString("ip4_route"),
 	}
 }
@@ -152,6 +152,7 @@ func InitIPC(app core.App) (err error) {
 			s2.Running = wgBind.GetDevice() != nil
 			return e.JSON(http.StatusOK, s2)
 		})
+		ulaPrefix := netip.MustParsePrefix("fdd9:f8ff::/32")
 		ipc.POST("/settings", func(e *core.RequestEvent) (err error) {
 			defer err0.Then(&err, nil, nil)
 
@@ -166,6 +167,16 @@ func InitIPC(app core.App) (err error) {
 					return apis.NewApiError(http.StatusPreconditionFailed, msg, err)
 				}
 				l.Close()
+			}
+
+			if s.ULA != "fdd9:f800::1" {
+				ip6, err := netip.ParseAddr(s.ULA)
+				if err != nil {
+					return apis.NewBadRequestError("解析ip6_addr失败", err)
+				}
+				if !ulaPrefix.Contains(ip6) {
+					return apis.NewBadRequestError("IPv6唯一地址(ip6_addr)超出范围, 需要在 fdd9:f8ff::/32 范围内", nil)
+				}
 			}
 
 			ms := map[string]any{}
@@ -232,6 +243,7 @@ func CommonStartWireGuard() error {
 }
 
 type Settings struct {
+	ULA       string `mapstructure:"ip6_addr" json:"ip6_addr" form:"ip6_addr"`
 	Route     string `mapstructure:"ip4_route" json:"ip4_route" form:"ip4_route"`
 	Listen    string `mapstructure:"listen" json:"listen" form:"listen"`
 	Tun       string `mapstructure:"tun" json:"tun" form:"tun"`
