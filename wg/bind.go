@@ -2,6 +2,7 @@ package wg
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/netip"
@@ -157,6 +158,15 @@ func InitIPC(app core.App) (err error) {
 			var s Settings
 			try.To(e.BindBody(&s))
 			oldListen := viper.GetString("listen")
+
+			if s.Listen != oldListen {
+				l, err := net.Listen("tcp", s.Listen)
+				if err != nil {
+					msg := fmt.Sprintf("%s 新的地址监听失败", s.Listen)
+					return apis.NewApiError(http.StatusPreconditionFailed, msg, err)
+				}
+				l.Close()
+			}
 
 			ms := map[string]any{}
 			b := try.To1(json.Marshal(s))
