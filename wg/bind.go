@@ -29,7 +29,7 @@ var wgHandler http.Handler
 
 func GetRoutes() []string {
 	return []string{
-		viper.GetString("ip6_addr") + "/24",
+		viper.GetString("ip6_addr") + "/28",
 		viper.GetString("ip4_route"),
 	}
 }
@@ -153,7 +153,7 @@ func InitIPC(app core.App) (err error) {
 			s2.MAC = getMAC()
 			return e.JSON(http.StatusOK, s2)
 		})
-		ulaPrefix := netip.MustParsePrefix("fdd9:f8ff::/32")
+		ulaPrefix := netip.MustParsePrefix("2001:00ff::/32")
 		ipc.POST("/settings", func(e *core.RequestEvent) (err error) {
 			defer err0.Then(&err, nil, nil)
 
@@ -170,13 +170,13 @@ func InitIPC(app core.App) (err error) {
 				l.Close()
 			}
 
-			if s.ULA != "fdd9:f800::1" {
+			if s.ULA != "2001:00f0::1" {
 				ip6, err := netip.ParseAddr(s.ULA)
 				if err != nil {
 					return apis.NewBadRequestError("解析ip6_addr失败", err)
 				}
 				if !ulaPrefix.Contains(ip6) {
-					return apis.NewBadRequestError("IPv6唯一地址(ip6_addr)超出范围, 需要在 fdd9:f8ff::/32 范围内", nil)
+					return apis.NewBadRequestError("IPv6唯一地址(ip6_addr)超出范围, 需要在 2001:00f0::/28 范围内", nil)
 				}
 				s.ULA = ip6.String()
 			}

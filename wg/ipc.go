@@ -92,6 +92,6 @@ func ip4in6(ip4raw string) (string, error) {
 		return "", err
 	}
 	ip4str := ip4.Addr().String()
-	ip4in6 := "fdd9:f8f4::" + ip4str + "/128"
+	ip4in6 := "2001:00f4::" + ip4str + "/128"
 	return ip4in6, nil
 }
