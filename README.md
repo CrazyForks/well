@@ -14,6 +14,7 @@ https://youtu.be/OP_VBSVW8Y0
 
 # Todo
 
+- [ ] 插件机制. 现在想允许任何人连接的话需要侧载脚本 [./side_scripts](./side_scripts/README.md), 如果能用 [pb_hooks](https://pocketbase.io/docs/js-overview/) 那种模式的话会好很多
 - [ ] <del>自己所属设备统一管理</del> 暂时不做, 感觉用外部脚本实现也挺简单的
 
 # 双重许可
