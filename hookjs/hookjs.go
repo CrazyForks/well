@@ -181,6 +181,8 @@ func (h *HookJS) AddListeners(app core.App) {
 		recordRequestHandler := genHandler[*core.RecordRequestEvent](h, hid, event)
 		recordEventHandler := genHandler[*core.RecordEvent](h, hid, event)
 		switch event {
+		case "onRecordValidate":
+			app.OnRecordValidate(h.collections...).Bind(recordEventHandler)
 		case "onRecordCreate":
 			app.OnRecordCreate(h.collections...).Bind(recordEventHandler)
 		case "onRecordUpdate":
@@ -201,6 +203,8 @@ func (h *HookJS) RemoveListeners(app core.App) {
 	for _, event := range h.events {
 		hid := fmt.Sprintf("hookjs-%s-%s", h.Id, event)
 		switch event {
+		case "onRecordValidate":
+			app.OnRecordValidate(h.collections...).Unbind(hid)
 		case "onRecordCreate":
 			app.OnRecordCreate(h.collections...).Unbind(hid)
 		case "onRecordUpdate":
