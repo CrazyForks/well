@@ -4,6 +4,8 @@ const (
 	TablePeers   = "peers"
 	TableICEs    = "ices"
 	TableLinkers = "linkers"
+
+	TableHookJS = "_hookjs"
 )
 
 const (

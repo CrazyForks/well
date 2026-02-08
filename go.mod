@@ -7,13 +7,16 @@ replace remoon.net/well-webui => ../well-webui
 replace golang.zx2c4.com/wireguard => github.com/remoon-net/wireguard-go v0.0.0-20250703151635-97f4294f663c
 
 require (
+	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/avast/retry-go/v4 v4.7.0
+	github.com/dop251/goja v0.0.0-20251201205617-2bb4c724c0f9
 	github.com/hashicorp/yamux v0.1.2
 	github.com/josephspurrier/goversioninfo v1.5.0
 	github.com/pion/webrtc/v4 v4.0.15
 	github.com/pocketbase/dbx v1.11.0
 	github.com/pocketbase/pocketbase v0.35.0
 	github.com/shynome/err0 v0.2.1
+	github.com/shynome/goja-almond v0.0.2
 	github.com/shynome/websocket v1.9.1
 	github.com/shynome/wgortc v0.8.4
 	github.com/spf13/cobra v1.10.2
@@ -29,18 +32,24 @@ require (
 
 require (
 	github.com/akavel/rsrc v0.10.2 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
+	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
+	github.com/dop251/base64dec v0.0.0-20231022112746-c6c9f9a96217 // indirect
+	github.com/dop251/goja_nodejs v0.0.0-20251015164255-5e94316bedaf // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/ganigeorgiev/fexpr v0.5.0 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
+	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/google/btree v1.0.1 // indirect
+	github.com/google/pprof v0.0.0-20251007162407-5df77e3f7d1d // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

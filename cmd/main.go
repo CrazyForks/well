@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 	"remoon.net/well/db"
 	_ "remoon.net/well/db/migrations"
+	"remoon.net/well/hookjs"
 	"remoon.net/well/wg"
 )
 
@@ -85,6 +86,7 @@ func Main(argsStr string) string {
 	try.To(wg.InitIPC(app))
 	try.To(wg.InitLinkers(app))
 	app.OnServe().Bind(uiHandler)
+	try.To(hookjs.InitHookJS(app))
 
 	firstbootCh := make(chan error)
 	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{
