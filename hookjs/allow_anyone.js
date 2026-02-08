@@ -1,6 +1,6 @@
 define(["collections/peers"], () => {
   return {
-    onRecordCreateRequest(e) {
+    onRecordCreate(e) {
       let r = e.record
       if (
         r.getString("name") == "" &&
