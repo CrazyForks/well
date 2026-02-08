@@ -122,7 +122,7 @@ func removeHookJS(app core.App, id string) {
 
 func addHookJS(app core.App, record *core.Record) error {
 	id := record.Id
-	vm, err := newVM(app)
+	vm, err := newVM()
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ type VM struct {
 	*almond.Module
 }
 
-func newVM(app core.App) (_ *VM, err error) {
+func newVM() (_ *VM, err error) {
 	defer err0.Then(&err, nil, nil)
 
 	vm := goja.New()
@@ -168,7 +168,6 @@ func newVM(app core.App) (_ *VM, err error) {
 	try.To1(vm.RunProgram(deps))
 
 	vm.SetFieldNameMapper(jsvm.FieldMapper{})
-	vm.Set("$app", app)
 
 	return &VM{
 		Runtime: vm,
@@ -179,14 +178,21 @@ func newVM(app core.App) (_ *VM, err error) {
 func (h *HookJS) AddListeners(app core.App) {
 	for _, event := range h.events {
 		hid := fmt.Sprintf("hookjs-%s-%s", h.Id, event)
-		handler := h.genEventHandler(hid, event)
+		recordRequestHandler := genHandler[*core.RecordRequestEvent](h, hid, event)
+		recordEventHandler := genHandler[*core.RecordEvent](h, hid, event)
 		switch event {
+		case "onRecordCreate":
+			app.OnRecordCreate(h.collections...).Bind(recordEventHandler)
+		case "onRecordUpdate":
+			app.OnRecordUpdate(h.collections...).Bind(recordEventHandler)
+		case "onRecordDelete":
+			app.OnRecordDelete(h.collections...).Bind(recordEventHandler)
 		case "onRecordCreateRequest":
-			app.OnRecordCreateRequest(h.collections...).Bind(handler)
+			app.OnRecordCreateRequest(h.collections...).Bind(recordRequestHandler)
 		case "onRecordUpdateRequest":
-			app.OnRecordUpdateRequest(h.collections...).Bind(handler)
+			app.OnRecordUpdateRequest(h.collections...).Bind(recordRequestHandler)
 		case "onRecordDeleteRequest":
-			app.OnRecordDeleteRequest(h.collections...).Bind(handler)
+			app.OnRecordDeleteRequest(h.collections...).Bind(recordRequestHandler)
 		}
 	}
 }
@@ -195,6 +201,12 @@ func (h *HookJS) RemoveListeners(app core.App) {
 	for _, event := range h.events {
 		hid := fmt.Sprintf("hookjs-%s-%s", h.Id, event)
 		switch event {
+		case "onRecordCreate":
+			app.OnRecordCreate(h.collections...).Unbind(hid)
+		case "onRecordUpdate":
+			app.OnRecordUpdate(h.collections...).Unbind(hid)
+		case "onRecordDelete":
+			app.OnRecordDelete(h.collections...).Unbind(hid)
 		case "onRecordCreateRequest":
 			app.OnRecordCreateRequest(h.collections...).Unbind(hid)
 		case "onRecordUpdateRequest":
@@ -207,12 +219,12 @@ func (h *HookJS) RemoveListeners(app core.App) {
 
 var requireHookJSModule = goja.MustCompile("require_hookjs_module", "requirejs('hookjs')", false)
 
-func (h *HookJS) genEventHandler(hid string, event string) *hook.Handler[*core.RecordRequestEvent] {
-	return &hook.Handler[*core.RecordRequestEvent]{
+func genHandler[T hook.Resolver](h *HookJS, hid string, event string) *hook.Handler[T] {
+	return &hook.Handler[T]{
 		Id:       hid,
 		Priority: h.GetInt("order"),
-		Func: func(e *core.RecordRequestEvent) error {
-			vm, err := newVM(e.App)
+		Func: func(e T) error {
+			vm, err := newVM()
 			if err != nil {
 				return err
 			}
