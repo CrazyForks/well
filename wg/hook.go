@@ -18,7 +18,7 @@ import (
 
 func InitHook(app core.App) error {
 	// 检查数据是否合法
-	preUpdateRequest(app, db.TablePeers, 0, func(e *core.RecordRequestEvent) error {
+	app.OnRecordValidate(db.TablePeers).BindFunc(func(e *core.RecordEvent) error {
 		r := e.Record
 		pubkey := r.GetString("pubkey")
 		if _, err := wgtypes.ParseKey(pubkey); err != nil {
@@ -96,7 +96,7 @@ func InitHook(app core.App) error {
 	return nil
 }
 
-func preUpdatePeer(e *core.RecordRequestEvent) (err error) {
+func preUpdatePeer(e *core.RecordEvent) (err error) {
 	defer err0.Then(&err, nil, nil)
 
 	r := e.Record
