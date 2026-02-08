@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.5] - 2025-02-08
+
+- 添加: hookjs 支持事件 `onRecordCreate`, `onRecordUpdate`, `onRecordDelete`
+
 ## [0.0.4] - 2025-02-08
 
 - 优化: 除了手机端, 默认都开机自启
