@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.7] - 2025-02-08
+
+- 修复: 修改WireGuard配置监听事件由`OnRecordUpdateRequest`改为`OnRecordUpdate`, 因为有些事件不是通过请求触发的
+
 ## [0.0.6] - 2025-02-08
 
 - 修复: 数据正确性检查应当放在 OnRecordValidate 中
