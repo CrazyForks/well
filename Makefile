@@ -8,9 +8,9 @@ build:
 deb: ui build
 	VERSION=${VERSION} nfpm pkg --packager deb
 aar: ui
-	gomobile bind -o ../well-android/app/libs/well-net.aar -ldflags "-X 'remoon.net/well/cmd.Version=${VERSION}' -checklinkname=0" -androidapi 21 -target=android -javapkg net.remoon.well ./cmd
+	go tool golang.org/x/mobile/cmd/gomobile bind -o ../well-android/app/libs/well-net.aar -ldflags "-X 'remoon.net/well/cmd.Version=${VERSION}' -checklinkname=0" -androidapi 21 -target=android -javapkg net.remoon.well ./cmd
 exe: ui
-	go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo -icon nsi/well-net.ico -o versioninfo_windows.syso
+	go tool github.com/josephspurrier/goversioninfo/cmd/goversioninfo -icon nsi/well-net.ico -o versioninfo_windows.syso
 	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-X 'main.Version=${VERSION}' -s -w" -o nsi/well-net.exe .
 exe-installer: exe
 	echo '!define VERSION "v${VERSION}"' > nsi/version.nsh
