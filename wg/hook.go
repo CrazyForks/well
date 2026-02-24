@@ -46,6 +46,7 @@ func InitHook(app core.App) error {
 	})
 	// 操作
 	preRecordUpdate(app, db.TablePeers, lastOrder, func(e *core.RecordEvent) error {
+		e.Record.Set("handshaked", "")
 		if err := e.Next(); err != nil {
 			return err
 		}
