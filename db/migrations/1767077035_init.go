@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/migrations"
@@ -12,6 +13,11 @@ import (
 func init() {
 	migrations.Register(func(app core.App) (err error) {
 		defer err0.Then(&err, nil, nil)
+
+		d := app.DataDir()
+		if strings.Contains(d, "pb_test") {
+			return
+		}
 
 		users := try.To1(app.FindCollectionByNameOrId("users"))
 		try.To(app.Delete(users))
