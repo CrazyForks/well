@@ -105,10 +105,12 @@ func (p *Peer) TransportMode() bind.TransportMode {
 func (p *Peer) HandshakeInitiationHook(initiator *bind.HandshakeInitiation) {}
 func (p *Peer) HandshakeResponseHook(hresp *bind.HandshakeResponse)         {}
 func (p *Peer) HandshakedHook(ep conn.Endpoint) {
-	handshaked, _ := types.ParseDateTime(time.Now())
-	q := dbx.HashExp{"id": p.Id}
-	params := dbx.Params{"handshaked": handshaked}
-	if _, err := p.app.DB().Update(db.TablePeers, params, q).Execute(); err != nil {
-		p.app.Logger().Error("更新 handshaked 出错", "peer", p, "error", err)
-	}
+	go func() {
+		handshaked, _ := types.ParseDateTime(time.Now())
+		q := dbx.HashExp{"id": p.Id}
+		params := dbx.Params{"handshaked": handshaked}
+		if _, err := p.app.DB().Update(db.TablePeers, params, q).Execute(); err != nil {
+			p.app.Logger().Error("更新 handshaked 出错", "peer", p, "error", err)
+		}
+	}()
 }
