@@ -34,6 +34,8 @@ https://youtu.be/H-iywrYNtmY
 
 ## Service Provider Demo
 
+first you need add allowed ports at [exports table](http://127.0.0.1:7799/_/#/collections?collection=__exports__&filter=&sort=-%40rowid)
+
 https://youtu.be/D2iu9xNmfR8
 
 # Frontend Interface

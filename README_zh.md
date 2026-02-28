@@ -32,6 +32,8 @@ https://youtu.be/H-iywrYNtmY
 
 ## 服务提供者使用演示
 
+提供服务时需要先添加允许的端口到 [exports table](http://127.0.0.1:7799/_/#/collections?collection=__exports__&filter=&sort=-%40rowid)
+
 https://youtu.be/D2iu9xNmfR8
 
 # 前端界面
