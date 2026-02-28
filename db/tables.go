@@ -5,7 +5,8 @@ const (
 	TableICEs    = "ices"
 	TableLinkers = "linkers"
 
-	TableHookJS = "_hookjs"
+	TableHookJS  = "_hookjs"
+	TableExports = "exports"
 )
 
 const (

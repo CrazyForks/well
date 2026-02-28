@@ -88,6 +88,7 @@ func Main(argsStr string) string {
 	try.To(wg.InitLinkers(app))
 	app.OnServe().Bind(uiHandler)
 	try.To(hookjs.InitHookJS(app))
+	try.To(wg.InitFirewall(app))
 
 	firstbootCh := make(chan error)
 	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{

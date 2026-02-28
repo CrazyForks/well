@@ -21,6 +21,7 @@ import (
 	"golang.zx2c4.com/wireguard/device"
 	"golang.zx2c4.com/wireguard/tun"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"remoon.net/well/wg/firewall"
 )
 
 var devLocker sync.Mutex
@@ -334,6 +335,8 @@ func startWireGuard(params DeviceParams) (err error) {
 	defer err0.Then(&err, nil, func() {
 		tdev.Close() // 如果出错了, 释放资源
 	})
+
+	tdev = firewall.NewTun(tdev, protoAllows)
 
 	base := getBaseTry()
 	wgConfig.base.Store(&base)

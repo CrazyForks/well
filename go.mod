@@ -10,6 +10,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/dop251/goja v0.0.0-20251201205617-2bb4c724c0f9
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/yamux v0.1.2
 	github.com/pion/webrtc/v4 v4.0.15
 	github.com/pocketbase/dbx v1.11.0
@@ -25,6 +26,7 @@ require (
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20241231184526-a9ab2273dd10
 	golang.zx2c4.com/wireguard/windows v0.5.3
+	gvisor.dev/gvisor v0.0.0-20230927004350-cbd86285d259
 	remoon.net/well-webui v0.0.0-00010101000000-000000000000
 )
 
@@ -48,7 +50,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/pprof v0.0.0-20251007162407-5df77e3f7d1d // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josephspurrier/goversioninfo v1.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -93,7 +94,6 @@ require (
 	golang.org/x/tools v0.40.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gvisor.dev/gvisor v0.0.0-20230927004350-cbd86285d259 // indirect
 	modernc.org/libc v1.66.10 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
